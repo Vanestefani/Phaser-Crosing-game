@@ -1,11 +1,31 @@
 // create a new scene
 let gameScene = new Phaser.Scene("Game");
 
+// initiate scene parameters
+gameScene.init = function () {
+  // player speed
+  this.playerSpeed = 3;
+};
+
 // load assets
 gameScene.preload = function () {
   // load images
-  this.load.image("background", "assets/background.png");
-  this.load.image("player", "assets/player.png");
+  this.load.image(
+    "background",
+    "https://jsbin-user-assets.s3.amazonaws.com/fariazz/original-background.png"
+  );
+  this.load.image(
+    "player",
+    "https://jsbin-user-assets.s3.amazonaws.com/fariazz/player.png"
+  );
+  this.load.image(
+    "enemy",
+    "https://jsbin-user-assets.s3.amazonaws.com/fariazz/dragon.png"
+  );
+  this.load.image(
+    "goal",
+    "https://jsbin-user-assets.s3.amazonaws.com/fariazz/treasure.png"
+  );
 };
 
 // called once after the preload ends
@@ -13,13 +33,43 @@ gameScene.create = function () {
   // create bg sprite
   let bg = this.add.sprite(0, 0, "background");
 
-  // place sprite in the center
-  bg.setPosition(640 / 2, 360 / 2);
+  // change the origin to the top-left corner
+  bg.setOrigin(0, 0);
 
-  let gameW = this.sys.game.config.width;
-  let gameH = this.sys.game.config.height;
+  // create the player
+  this.player = this.add.sprite(40, this.sys.game.config.height / 2, "player");
 
-  let player = this.add.sprite(70, 180, "player");
+  // we are reducing the width by 50%, and we are doubling the height
+  this.player.setScale(0.5);
+
+  // goal
+  this.goal = this.add.sprite(
+    this.sys.game.config.width - 80,
+    this.sys.game.config.height / 2,
+    "goal"
+  );
+  this.goal.setScale(0.6);
+};
+
+// this is called up to 60 times per second
+gameScene.update = function () {
+  // check for active input
+  if (this.input.activePointer.isDown) {
+    // player walks
+    this.player.x += this.playerSpeed;
+  }
+
+  // treasure overlap check
+  let playerRect = this.player.getBounds();
+  let treasureRect = this.goal.getBounds();
+
+  if (Phaser.Geom.Intersects.RectangleToRectangle(playerRect, treasureRect)) {
+    console.log("reached goal!");
+
+    // restart the Scene
+    this.scene.restart();
+    return;
+  }
 };
 
 // set the configuration of the game
